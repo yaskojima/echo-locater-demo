@@ -1,0 +1,189 @@
+ <!DOCTYPE HTML>
+  <html>
+    <head>
+        <meta http-equiv="Content-type" content="text/html; charset=utf-8" />
+        <title>Plain Project Skeleton</title>
+
+        <style type="text/css">
+
+            #bottombar {
+                position : absolute;
+                left : 0px;
+                bottom : 30px;
+                width : 100%;
+            text-align : center;
+            }
+
+        </style>
+
+         <script type="text/javascript" src="components/loader.js"></script>
+         <script type="text/javascript">
+
+         //Variables to specify the sound sources. They are used to generate Media objects.
+         var src1 = "14khz.mp3";
+         var src2 = "14khz.mp3";
+         var src3 = "14khz.mp3";
+
+         //In order to use Media objects, these variables must be declared here. Their initial values are null (empty).
+         var media1 = null;
+         var media2 = null;
+         var media3 = null;
+
+
+        //In Android, it's necessary to specify the absolute path
+         function getPath(){
+             var str = location.pathname;
+             var i = str.lastIndexOf('/');
+             return str.substring(0,i+1);
+         }
+
+                 //Call "onDeviceReady" function when "deviceready" event of the Core Cordova Plugins completed.
+         document.addEventListener("deviceready", onDeviceReady, false);
+
+
+         function onDeviceReady(){
+
+               alert("Loading Core Cordova Plugins is completed");
+
+                           /*
+                            Generating objects to play the sound effect.
+                            1st argument [getPath() + src1] indicates the path of the sound file.
+                            2nd and 3rd arguments defines a callback function when encounter success and failure respectively.
+                           */
+               media1 = new Media(getPath() + src1, onSuccess, onError);
+               media2 = new Media(getPath() + src2, onSuccess, onError);
+               media3 = new Media(getPath() + src3, onSuccess, onError);
+        }
+
+             if (typeof Windows != "undefined") {
+
+                 window.alert = function(s) {
+                     new Windows.UI.Popups.MessageDialog(s).showAsync();
+                 }
+            }
+            function simplePlay(){
+                var mediaPlay = new Media(getPath() + "14khz.mp3", 
+                    // success callback
+                    function(){
+                        alert("simplePlay():Success");
+                        mediaPlay.release();
+                    },
+                    // error callback
+                    function(err){
+                        alert("simplePlay():Audio Error: "+ err.code);
+                        mediaPlay.release();
+                    });
+                mediaPlay.play();
+                
+            }
+            function simpleRec(){
+                // start record
+                var src = 'documents://recording.wav';
+                var mediaRec = new Media(src,
+                    // success callback
+                    function() {
+                        alert("simpleRec():Audio Success");
+                        mediaRec.release();
+                    },
+                    // error callback
+                    function(err) {
+                        alert("simpleRec():Audio Error: "+ err.code);
+                        mediaRec.release();
+                });
+
+                // Record audio
+                mediaRec.startRecord();
+                
+                var mediaTimer = setInterval(function () {
+                    // get media amplitude
+                    mediaRec.getCurrentAmplitude(
+                        // success callback
+                        function (amp) {
+                            console.log(amp + "%");
+                        },
+                        // error callback
+                        function (e) {
+                            console.log("Error getting amp=" + e);
+                        }
+                    );
+                }, 1000);
+
+                // Pause Recording after x seconds
+                setTimeout(function() {
+                    clearTimeout(mediaTimer);
+                    mediaRec.stopRecord();
+                }, 10000);
+
+            }
+            function playRecordedMedia(){
+                var src = 'documents://recording.wav';
+                var mediaPlay = new Media(src, 
+                    // success callback
+                    function(){
+                        alert("playRecordedMedia():Success");
+                        mediaPlay.release();
+                    },
+                    // error callback
+                    function(err){
+                        alert("playRecordedMedia():Audio Error: "+ err.code);
+                        mediaPlay.release();
+                    });
+                    
+                alert("再生時間"+ mediaPlay.getDuration());
+                    
+                mediaPlay.play();
+            }
+            function recWithPlay(){
+                simpleRec();
+                simplePlay();
+            }
+            function kikimimi(){
+                // start record
+                var src = 'documents://recording.wav';
+                var mediaRec = new Media(src,
+                    // success callback
+                    function() {
+                        console.log("recordAudio():Audio Success");
+                        //alert('begin PLAY');
+                        mediaRec.play();
+                        mediaRec.release();
+                        //alert('end PLAY');
+                    },
+                    // error callback
+                    function(err) {
+                        alert("recordAudio():Audio Error: "+ err.code);
+                        console.log("recordAudio():Audio Error: "+ err.code);
+                        mediaRec.release();
+                });
+                
+                media1 = new Media(getPath() + src1, onSuccess, onError);
+                
+                alert('begin REC');
+                
+                // Record audio
+                mediaRec.startRecord();
+                media1.play();
+                
+                // Pause Recording after 5 seconds
+                setTimeout(function() {
+                    mediaRec.stopRecord();
+                    media1.stop();
+                    media1.release();
+                    alert('end REC');
+                }, 3000);
+            }
+
+         </script>
+    </head>
+    <body>
+
+        <div id="bottombar">
+            <input type="button" value="再生" onClick="simplePlay()"><br /><br />
+            <input type="button" value="録音" onClick="simpleRec()"><br /><br />
+            <input type="button" value="録音したのを再生" onClick="playRecordedMedia()"><br /><br />
+            <input type="button" value="再生しながら録音" onClick="recWithPlay()"><br /><br />
+            <input type="button" value="ききみみ" onClick="kikimimi()"><br /><br />
+        </div>
+
+    </body>
+  </html>
